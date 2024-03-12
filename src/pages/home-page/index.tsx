@@ -1,10 +1,9 @@
-import { ColorTheme_Toggler } from "@/components";
+import { Query_Form } from "@/components";
 
 export const Home_Page = () => {
   return (
     <>
-      <p>Home_Page</p>
-      <ColorTheme_Toggler />
+      <Query_Form />
     </>
   );
 };
