@@ -5,5 +5,5 @@ interface Content_Wraper_Props {
 }
 
 export const Content_Wraper: FC<Content_Wraper_Props> = ({ children }) => {
-  return <main className="grow container">{children}</main>;
+  return <main className="grow container pb-1">{children}</main>;
 };

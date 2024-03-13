@@ -28,6 +28,8 @@ import {
 import { regions } from "@/assets/countries+states";
 import { useState } from "react";
 import { categories } from "@/assets/places-categories";
+import { useAppDispatch, useAppSelector } from "@/hooks";
+import { getPlaces } from "@/store/places-slice";
 
 const FormSchema = z.object({
   country: z.string({
@@ -38,6 +40,10 @@ const FormSchema = z.object({
 });
 
 export function Query_Form() {
+  const dispatch = useAppDispatch();
+  const { gl, autocorrect } = useAppSelector(
+    (state) => state.places.searchParameters
+  );
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
   });
@@ -46,9 +52,11 @@ export function Query_Form() {
   const [openCategories, setOpenCategories] = useState(false);
 
   function onSubmit(data: z.infer<typeof FormSchema>) {
-    const query = `Scrap the maps for ${data.category} places in ${
+    const query = `Find ${data.category} places in ${
       data.city ? `${data.city}, ` : ""
     }${data.country}`;
+
+    dispatch(getPlaces(query, gl, autocorrect));
   }
 
   return (

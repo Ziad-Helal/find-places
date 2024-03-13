@@ -5,3 +5,5 @@ export * from "./label";
 export * from "./popover";
 export * from "./command";
 export * from "./dialog";
+export * from "./card";
+export * from "./skeleton";
