@@ -16,10 +16,8 @@ import {
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
-  FormLabel,
   FormMessage,
 } from "@/components/ui/form";
 import {
@@ -28,92 +26,80 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { regions } from "@/assets/countries+states";
-// import { toast } from "@/components/ui/use-toast"
-
-// const languages = [
-//   { label: "English", value: "en" },
-//   { label: "French", value: "fr" },
-//   { label: "German", value: "de" },
-//   { label: "Spanish", value: "es" },
-//   { label: "Portuguese", value: "pt" },
-//   { label: "Russian", value: "ru" },
-//   { label: "Japanese", value: "ja" },
-//   { label: "Korean", value: "ko" },
-//   { label: "Chinese", value: "zh" },
-// ] as const;
+import { useState } from "react";
+import { categories } from "@/assets/places-categories";
 
 const FormSchema = z.object({
-  region: z.string({
-    required_error: "Please select a region.",
+  country: z.string({
+    required_error: "Please select a coutry.",
   }),
+  city: z.string().optional(),
+  category: z.string({ required_error: "Please select a place category." }),
 });
 
 export function Query_Form() {
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
   });
+  const [openCountries, setOpenCountries] = useState(false);
+  const [openCities, setOpenCities] = useState(false);
+  const [openCategories, setOpenCategories] = useState(false);
 
   function onSubmit(data: z.infer<typeof FormSchema>) {
-    // toast({
-    //   title: "You submitted the following values:",
-    //   description: (
-    //     <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-    //       <code className="text-white">{JSON.stringify(data, null, 2)}</code>
-    //     </pre>
-    //   ),
-    // })
+    const query = `Scrap the maps for ${data.category} places in ${
+      data.city ? `${data.city}, ` : ""
+    }${data.country}`;
   }
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-2 mt-2">
         <FormField
           control={form.control}
-          name="region"
+          name="country"
           render={({ field }) => (
             <FormItem className="flex flex-col">
-              <FormLabel>Language</FormLabel>
-              <Popover>
+              <Popover open={openCountries} onOpenChange={setOpenCountries}>
                 <PopoverTrigger asChild>
                   <FormControl>
                     <Button
                       variant="outline"
                       role="combobox"
                       className={cn(
-                        "w-[200px] justify-between",
+                        "w-full justify-between",
                         !field.value && "text-muted-foreground"
                       )}
                     >
                       {field.value
-                        ? regions.find((region) => region.name === field.value)
-                            ?.name
-                        : "Select region"}
+                        ? regions.find(({ name }) => name === field.value)?.name
+                        : "Select country"}
                       <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                     </Button>
                   </FormControl>
                 </PopoverTrigger>
-                <PopoverContent className="w-[200px] p-0">
+                <PopoverContent className="w-full p-0" align="start">
                   <Command>
                     <CommandInput
-                      placeholder="Search a region..."
+                      placeholder="Search countries..."
                       className="h-9"
                     />
                     <CommandList>
-                      <CommandEmpty>No regions found.</CommandEmpty>
+                      <CommandEmpty>No countries found.</CommandEmpty>
                       <CommandGroup>
-                        {regions.map((region) => (
+                        {regions.map(({ name, numeric_code }) => (
                           <CommandItem
-                            value={region.name}
-                            key={region.numeric_code}
+                            value={name}
+                            key={numeric_code}
                             onSelect={() => {
-                              form.setValue("region", region.name);
+                              form.setValue("country", name);
+                              setOpenCountries(false);
                             }}
                           >
-                            {region.name}
+                            {name}
                             <CheckIcon
                               className={cn(
                                 "ml-auto h-4 w-4",
-                                region.name === field.value
+                                name === field.value
                                   ? "opacity-100"
                                   : "opacity-0"
                               )}
@@ -125,14 +111,159 @@ export function Query_Form() {
                   </Command>
                 </PopoverContent>
               </Popover>
-              <FormDescription>
-                This is the region that will be used in the dashboard.
-              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
         />
-        <Button type="submit">Submit</Button>
+        {form.getValues("country") && (
+          <FormField
+            control={form.control}
+            name="city"
+            render={({ field }) => (
+              <FormItem className="flex flex-col">
+                <Popover open={openCities} onOpenChange={setOpenCities}>
+                  <PopoverTrigger asChild>
+                    <FormControl>
+                      <Button
+                        variant="outline"
+                        role="combobox"
+                        className={cn(
+                          "w-full justify-between",
+                          !field.value && "text-muted-foreground"
+                        )}
+                      >
+                        {field.value
+                          ? regions[
+                              regions.findIndex(
+                                ({ name }) => name === form.getValues("country")
+                              )
+                            ].states.find(({ name }) => name === field.value)
+                              ?.name
+                          : "Select city"}
+                        <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </FormControl>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-full p-0" align="start">
+                    <Command>
+                      <CommandInput
+                        placeholder="Search countries..."
+                        className="h-9"
+                      />
+                      <CommandList>
+                        <CommandEmpty>No countries found.</CommandEmpty>
+                        <CommandGroup>
+                          {regions[
+                            regions.findIndex(
+                              ({ name }) => name === form.getValues("country")
+                            )
+                          ].states.map(({ id, name }) => (
+                            <CommandItem
+                              value={name}
+                              key={id}
+                              onSelect={() => {
+                                form.setValue("city", name);
+                                setOpenCities(false);
+                              }}
+                            >
+                              {name}
+                              <CheckIcon
+                                className={cn(
+                                  "ml-auto h-4 w-4",
+                                  name === field.value
+                                    ? "opacity-100"
+                                    : "opacity-0"
+                                )}
+                              />
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
+        {form.getValues("country") && (
+          <FormField
+            control={form.control}
+            name="category"
+            render={({ field }) => (
+              <FormItem className="flex flex-col">
+                <Popover open={openCategories} onOpenChange={setOpenCategories}>
+                  <PopoverTrigger asChild>
+                    <FormControl>
+                      <Button
+                        variant="outline"
+                        role="combobox"
+                        className={cn(
+                          "w-full justify-between",
+                          !field.value && "text-muted-foreground"
+                        )}
+                      >
+                        {field.value
+                          ? categories.find(
+                              (category) => category === field.value
+                            )
+                          : "Select place"}
+                        <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </FormControl>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-full p-0" align="start">
+                    <Command>
+                      <CommandInput
+                        placeholder="Search places..."
+                        className="h-9"
+                      />
+                      <CommandList>
+                        <CommandEmpty>No places found.</CommandEmpty>
+                        <CommandGroup>
+                          {categories.map((category) => (
+                            <CommandItem
+                              value={category}
+                              key={category}
+                              onSelect={() => {
+                                form.setValue("category", category);
+                                setOpenCategories(false);
+                              }}
+                            >
+                              {category}
+                              <CheckIcon
+                                className={cn(
+                                  "ml-auto h-4 w-4",
+                                  category === field.value
+                                    ? "opacity-100"
+                                    : "opacity-0"
+                                )}
+                              />
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
+        {form.getValues("country") && form.getValues("category") && (
+          <div className="items-center justify-between md:flex">
+            <p className="my-1 text-center md:text-start">{`Scrap the maps for ${form.getValues(
+              "category"
+            )} places in ${
+              form.getValues("city") ? `${form.getValues("city")}, ` : ""
+            }${form.getValues("country")}?`}</p>
+            <Button type="submit" size="sm" className="w-full md:w-auto">
+              Submit
+            </Button>
+          </div>
+        )}
       </form>
     </Form>
   );
