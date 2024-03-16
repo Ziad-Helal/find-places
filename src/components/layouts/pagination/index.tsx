@@ -10,20 +10,20 @@ interface Pagination_Props {
 
 export const Pagination: FC<Pagination_Props> = ({ children }) => {
   const dispatch = useAppDispatch();
-  const {
-    page: currentPage,
-    gl: country,
-    q: query,
-    autocorrect,
-  } = useAppSelector((state) => state.places.searchParameters);
+  // const {
+  //   page: currentPage,
+  //   gl: country,
+  //   q: query,
+  //   autocorrect,
+  // } = useAppSelector((state) => state.places.searchParameters);
 
-  function getNextPage() {
-    dispatch(getPlaces({ autocorrect, country, page: currentPage + 1, query }));
-  }
+  // function getNextPage() {
+  //   dispatch(getPlaces({}));
+  // }
 
-  function getPreviousPage() {
-    dispatch(getPlaces({ autocorrect, country, page: currentPage - 1, query }));
-  }
+  // function getPreviousPage() {
+  //   dispatch(getPlaces({}));
+  // }
 
   return (
     <section className="mt-4">
@@ -33,18 +33,18 @@ export const Pagination: FC<Pagination_Props> = ({ children }) => {
           size="icon"
           className="rounded-full"
           title="Go to previous page"
-          disabled={currentPage == 1}
-          onClick={getPreviousPage}
+          // disabled={currentPage == 1}
+          // onClick={getPreviousPage}
         >
           <ChevronLeft />
         </Button>
-        <span>{currentPage}</span>
+        <span>{1}</span>
         <Button
           variant="ghost"
           size="icon"
           className="rounded-full"
           title="Go to next page"
-          onClick={getNextPage}
+          // onClick={getNextPage}
         >
           <ChevronRight />
         </Button>

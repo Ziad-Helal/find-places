@@ -1,45 +1,33 @@
 import axios from "axios";
-import { AppDispatch } from "..";
+import { AppDispatch } from "@/store";
 import { setPlaces } from "@/store/places-slice";
 import { isLoaded, isLoading } from "@/store/general-slice";
 
-const url = "https://google.serper.dev/places";
-const headers = {
-  "X-API-KEY": "4e5d9165194bc3f47b40fe98df80fbe5d46419db",
-  "Content-Type": "application/json",
-};
+// https://maps.googleapis.com/maps/api/place/textsearch/json?query=retaurants+in+cairo,+egypt&key=AIzaSyBYzoQ-PfTHOEfb9vIIfz6-7i8RJh2iYBE
 
 export const getPlaces = ({
-  query,
   country,
-  autocorrect,
-  page,
+  city,
+  category,
 }: {
-  query: string;
   country: string;
-  autocorrect: boolean;
-  page: number;
+  city: string;
+  category: string;
 }) => {
   return async (dispatch: AppDispatch) => {
-    const data = JSON.stringify({
-      q: query,
-      gl: country,
-      autocorrect,
-      page,
-    });
-
-    const config = {
-      method: "post",
-      url,
-      headers,
-      data,
-    };
-
     dispatch(isLoading("places"));
 
-    const response = await axios(config)
+    const response = await axios
+      .get("https://e389-156-214-244-174.ngrok-free.app/api/blogs", {
+        data: {
+          country,
+          city,
+          category,
+        },
+      })
       .then(({ data }) => data)
-      .catch((error) => alert(error));
+      .catch((error) => console.log(error));
+    console.log(response);
 
     dispatch(isLoaded("places"));
     dispatch(setPlaces(response));

@@ -30,20 +30,22 @@ import { useState } from "react";
 import { categories } from "@/assets/places-categories";
 import { useAppDispatch, useAppSelector } from "@/hooks";
 import { getPlaces } from "@/store/places-slice";
+import { Input } from "@/components";
 
 const FormSchema = z.object({
   country: z.string({
     required_error: "Please select a coutry.",
   }),
-  city: z.string().optional(),
+  city: z.string({ required_error: "Please select a city." }),
   category: z.string({ required_error: "Please select a place category." }),
+  comment: z.string().optional(),
 });
 
 export function Query_Form() {
   const dispatch = useAppDispatch();
-  const { gl: country, autocorrect } = useAppSelector(
-    (state) => state.places.searchParameters
-  );
+  // const { gl: country, autocorrect } = useAppSelector(
+  //   (state) => state.places.searchParameters
+  // );
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
   });
@@ -52,11 +54,13 @@ export function Query_Form() {
   const [openCategories, setOpenCategories] = useState(false);
 
   function onSubmit(data: z.infer<typeof FormSchema>) {
-    const query = `Find ${data.category} places in ${
-      data.city ? `${data.city}, ` : ""
-    }${data.country}`;
-
-    dispatch(getPlaces({ query, country, autocorrect, page: 1 }));
+    dispatch(
+      getPlaces({
+        country: data.country,
+        city: data.city,
+        category: data.category,
+      })
+    );
   }
 
   return (
@@ -260,6 +264,20 @@ export function Query_Form() {
             )}
           />
         )}
+        {/* {form.getValues("country") && (
+          <FormField
+            control={form.control}
+            name="comment"
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <Input placeholder="Somthing Specific..." {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )} */}
         {form.getValues("country") && form.getValues("category") && (
           <div className="items-center justify-between md:flex">
             <p className="my-1 text-center md:text-start">{`Scrap the maps for ${form.getValues(

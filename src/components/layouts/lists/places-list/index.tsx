@@ -25,7 +25,7 @@ export const Places_List = () => {
     places && (
       <Pagination>
         {places!.map((place) => (
-          <Place_Card key={place.cid} place={place} />
+          <Place_Card key={place.place_id} place={place} />
         ))}
       </Pagination>
     )

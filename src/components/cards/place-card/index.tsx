@@ -5,28 +5,41 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components";
-import { place } from "@/store/places-slice";
+import { Place } from "@/store/places-slice";
 import { StarFilledIcon } from "@radix-ui/react-icons";
 import { PhoneCall } from "lucide-react";
 import { FC } from "react";
 
 interface Place_Card_Props {
-  place: place;
+  place: Place;
 }
 
 export const Place_Card: FC<Place_Card_Props> = ({ place }) => {
-  const { title, address, category, phoneNumber, rating, ratingCount } = place;
+  const { name, formatted_address, rating, user_ratings_total } = place;
 
   return (
     <Card>
       <CardHeader>
         <div className="flex items-center justify-between">
-          <CardTitle className="sm:text-xl">{title}</CardTitle>
-          <p className="text-muted-foreground">{category}</p>
+          <CardTitle className="sm:text-xl">{name}</CardTitle>
+          {/* <p className="text-muted-foreground">{category}</p> */}
         </div>
-        <CardDescription>{address}</CardDescription>
+        <CardDescription>{formatted_address}</CardDescription>
       </CardHeader>
-      {(phoneNumber || rating) && (
+      <CardContent className="flex items-center justify-between">
+        <div
+          className="flex items-center gap-2"
+          title={`${user_ratings_total} ratings`}
+        >
+          {rating && (
+            <>
+              <StarFilledIcon />
+              <span>{rating} / 5</span>
+            </>
+          )}
+        </div>
+      </CardContent>
+      {/* {(phoneNumber || rating) && (
         <CardContent className="flex items-center justify-between">
           <div
             className="flex items-center gap-2"
@@ -45,7 +58,7 @@ export const Place_Card: FC<Place_Card_Props> = ({ place }) => {
             </a>
           )}
         </CardContent>
-      )}
+      )} */}
     </Card>
   );
 };
