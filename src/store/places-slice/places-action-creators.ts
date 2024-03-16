@@ -9,12 +9,23 @@ const headers = {
   "Content-Type": "application/json",
 };
 
-export function getPlaces(q: string, gl: string, autocorrect: boolean) {
+export const getPlaces = ({
+  query,
+  country,
+  autocorrect,
+  page,
+}: {
+  query: string;
+  country: string;
+  autocorrect: boolean;
+  page: number;
+}) => {
   return async (dispatch: AppDispatch) => {
     const data = JSON.stringify({
-      q,
-      gl,
+      q: query,
+      gl: country,
       autocorrect,
+      page,
     });
 
     const config = {
@@ -33,4 +44,4 @@ export function getPlaces(q: string, gl: string, autocorrect: boolean) {
     dispatch(isLoaded("places"));
     dispatch(setPlaces(response));
   };
-}
+};

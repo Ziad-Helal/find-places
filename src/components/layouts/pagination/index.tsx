@@ -1,5 +1,6 @@
 import { Button } from "@/components";
-import { useAppSelector } from "@/hooks";
+import { useAppDispatch, useAppSelector } from "@/hooks";
+import { getPlaces } from "@/store/places-slice";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { FC, ReactNode } from "react";
 
@@ -8,18 +9,43 @@ interface Pagination_Props {
 }
 
 export const Pagination: FC<Pagination_Props> = ({ children }) => {
-  const currentPage = useAppSelector(
-    (state) => state.places.searchParameters.page
-  );
+  const dispatch = useAppDispatch();
+  const {
+    page: currentPage,
+    gl: country,
+    q: query,
+    autocorrect,
+  } = useAppSelector((state) => state.places.searchParameters);
+
+  function getNextPage() {
+    dispatch(getPlaces({ autocorrect, country, page: currentPage + 1, query }));
+  }
+
+  function getPreviousPage() {
+    dispatch(getPlaces({ autocorrect, country, page: currentPage - 1, query }));
+  }
 
   return (
     <section className="mt-4">
       <header className="flex items-center justify-center gap-4">
-        <Button variant="ghost" size="icon">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="rounded-full"
+          title="Go to previous page"
+          disabled={currentPage == 1}
+          onClick={getPreviousPage}
+        >
           <ChevronLeft />
         </Button>
-        <span>{currentPage || 1}</span>
-        <Button variant="ghost" size="icon">
+        <span>{currentPage}</span>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="rounded-full"
+          title="Go to next page"
+          onClick={getNextPage}
+        >
           <ChevronRight />
         </Button>
       </header>

@@ -41,7 +41,7 @@ const FormSchema = z.object({
 
 export function Query_Form() {
   const dispatch = useAppDispatch();
-  const { gl, autocorrect } = useAppSelector(
+  const { gl: country, autocorrect } = useAppSelector(
     (state) => state.places.searchParameters
   );
   const form = useForm<z.infer<typeof FormSchema>>({
@@ -56,7 +56,7 @@ export function Query_Form() {
       data.city ? `${data.city}, ` : ""
     }${data.country}`;
 
-    dispatch(getPlaces(query, gl, autocorrect));
+    dispatch(getPlaces({ query, country, autocorrect, page: 1 }));
   }
 
   return (
