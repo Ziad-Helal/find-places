@@ -290,17 +290,15 @@ export function Query_Form() {
             )}
           />
         )}
-        <div>
-          {form.getValues("country") && form.getValues("category") && (
-            <Button type="submit" className="w-full">
-              Submit
-            </Button>
-          )}
-          {fetching ||
-            (totalResults && query && (
-              <p className="bg-foreground text-background p-2 rounded-lg mt-2">{`${totalResults} ${query}`}</p>
-            ))}
-        </div>
+        {form.getValues("country") && form.getValues("category") && (
+          <Button type="submit" className="w-full">
+            Submit
+          </Button>
+        )}
+        {fetching ||
+          (totalResults && query && (
+            <p className="bg-foreground text-background p-2 rounded-lg">{`${totalResults} ${query}`}</p>
+          ))}
       </form>
     </Form>
   );

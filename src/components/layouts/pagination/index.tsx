@@ -29,7 +29,6 @@ interface Pagination_Props {
 export const Pagination: FC<Pagination_Props> = ({ children }) => {
   const dispatch = useAppDispatch();
   const { pagination, places } = useAppSelector((state) => state.places);
-  console.log(places);
 
   function goToNextPage() {
     dispatch(nextPage());

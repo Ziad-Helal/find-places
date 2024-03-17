@@ -121,11 +121,20 @@ const placesSlice = createSlice({
       state.pagination!.lastPage = Math.ceil(
         state.pagination!.totalResults / +resultsPerPage
       );
-      const startingIndex = state.pagination!.page * +resultsPerPage;
+      state.pagination!.page =
+        state.pagination!.page > state.pagination!.lastPage
+          ? (state.pagination!.page = state.pagination!.lastPage)
+          : state.pagination!.page;
+      const startingIndex =
+        state.pagination!.page * state.pagination!.resultsPerPage;
       state.pagination!.currentResults = state.places!.slice(
-        startingIndex,
-        state.pagination!.resultsPerPage
+        startingIndex - state.pagination!.resultsPerPage,
+        startingIndex
       );
+
+      console.log("page", state.pagination?.page);
+      console.log("from", startingIndex - state.pagination!.resultsPerPage);
+      console.log("to", startingIndex - 1);
     },
   },
 });
