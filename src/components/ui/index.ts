@@ -8,3 +8,4 @@ export * from "./dialog";
 export * from "./card";
 export * from "./skeleton";
 export * from "./input";
+export * from "./select";

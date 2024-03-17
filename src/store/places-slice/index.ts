@@ -1,36 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
 
-// interface parameters {
-//   q: string;
-//   gl: string;
-//   hl: string;
-//   type: string;
-//   num: number;
-//   autocorrect: boolean;
-//   page: number;
-//   engine: string;
-// }
-
-// export interface place {
-//   position: number;
-//   title: string;
-//   address: string;
-//   latitude: number;
-//   longitude: number;
-//   thumbnailUrl: string;
-//   rating?: number;
-//   ratingCount?: number;
-//   category: string;
-//   phoneNumber?: string;
-//   cid: string;
-// }
-
-// interface PlacesState {
-//   searchParameters: parameters;
-//   places?: place[];
-// }
-
 export interface Place {
   business_status: string;
   formatted_address: string;
@@ -54,7 +24,7 @@ export interface Place {
   icon_background_color: string;
   icon_mask_base_uri: string;
   name: string;
-  opening_hours: {
+  opening_hours?: {
     open_now: boolean;
   };
   photos: {
@@ -75,8 +45,16 @@ export interface Place {
   types: string[];
 }
 
+interface Pagination {
+  page: number;
+  lastPage: number;
+  resultsPerPage: number;
+  totalResults: number;
+  currentResults: Place[];
+}
+
 interface PlacesState {
-  next_page_token?: string;
+  pagination?: Pagination;
   places?: Place[];
 }
 
@@ -86,18 +64,80 @@ const placesSlice = createSlice({
   name: "places",
   initialState,
   reducers: {
-    setPlaces(state, action: PayloadAction<PlacesState>) {
-      state.next_page_token = action.payload.next_page_token;
-      state.places = action.payload.places;
+    setPlaces(state, action: PayloadAction<Place[]>) {
+      const results = action.payload;
+      const page = 1;
+      const resultsPerPage = +localStorage.getItem("resultsPerPage")! || 10;
+      const totalResults = results.length;
+      const lastPage = Math.ceil(totalResults / resultsPerPage);
+      const currentResults = results.slice(0, resultsPerPage);
+
+      state.places = results;
+      state.pagination = {
+        page,
+        lastPage,
+        resultsPerPage,
+        totalResults,
+        currentResults,
+      };
     },
-    // setPlaces(state, action: PayloadAction<PlacesState>) {
-    //   state.searchParameters = action.payload.searchParameters;
-    //   state.places = action.payload.places;
-    // },
+    nextPage(state) {
+      const startingIndex =
+        state.pagination!.page * state.pagination!.resultsPerPage;
+      state.pagination!.page = state.pagination!.page += 1;
+      state.pagination!.currentResults = state.places!.slice(
+        startingIndex,
+        startingIndex + state.pagination!.resultsPerPage
+      );
+    },
+    previousPage(state) {
+      state.pagination!.page = state.pagination!.page -= 1;
+      const startingIndex =
+        state.pagination!.page * state.pagination!.resultsPerPage;
+      state.pagination!.currentResults = state.places!.slice(
+        startingIndex - state.pagination!.resultsPerPage,
+        startingIndex
+      );
+    },
+    firstPage(state) {
+      state.pagination!.page = 1;
+      state.pagination!.currentResults = state.places!.slice(
+        0,
+        state.pagination!.resultsPerPage
+      );
+    },
+    lastPage(state) {
+      const lastPage = state.pagination!.lastPage;
+      state.pagination!.page = lastPage;
+      state.pagination!.currentResults = state.places!.slice(
+        lastPage * state.pagination!.resultsPerPage -
+          state.pagination!.resultsPerPage
+      );
+    },
+    setResultsPerPage(state, action: PayloadAction<string>) {
+      const resultsPerPage = action.payload;
+      localStorage.setItem("resultsPerPage", resultsPerPage);
+      state.pagination!.resultsPerPage = +resultsPerPage;
+      state.pagination!.lastPage = Math.ceil(
+        state.pagination!.totalResults / +resultsPerPage
+      );
+      const startingIndex = state.pagination!.page * +resultsPerPage;
+      state.pagination!.currentResults = state.places!.slice(
+        startingIndex,
+        state.pagination!.resultsPerPage
+      );
+    },
   },
 });
 
-export const { setPlaces } = placesSlice.actions;
+export const {
+  setPlaces,
+  nextPage,
+  previousPage,
+  firstPage,
+  lastPage,
+  setResultsPerPage,
+} = placesSlice.actions;
 
 export default placesSlice.reducer;
 

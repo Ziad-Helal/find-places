@@ -43,9 +43,11 @@ const FormSchema = z.object({
 
 export function Query_Form() {
   const dispatch = useAppDispatch();
-  // const { gl: country, autocorrect } = useAppSelector(
-  //   (state) => state.places.searchParameters
-  // );
+  const [query, setQuery] = useState("");
+  const totalResults = useAppSelector(
+    (state) => state.places.pagination?.totalResults
+  );
+  const fetching = useAppSelector((state) => state.general.loading.places);
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
   });
@@ -58,9 +60,19 @@ export function Query_Form() {
       getPlaces({
         country: data.country,
         city: data.city,
-        category: data.category,
+        category: data.comment
+          ? `${data.comment} ${data.category}`
+          : data.category,
       })
     );
+    setQuery(
+      `${
+        data.comment ? `${data.comment} ${data.category}` : data.category
+      } places in ${data.city}, ${data.country}`
+    );
+    form.setValue("city", "");
+    form.setValue("category", "");
+    form.setValue("comment", "");
   }
 
   return (
@@ -264,7 +276,7 @@ export function Query_Form() {
             )}
           />
         )}
-        {/* {form.getValues("country") && (
+        {form.getValues("country") && (
           <FormField
             control={form.control}
             name="comment"
@@ -277,19 +289,18 @@ export function Query_Form() {
               </FormItem>
             )}
           />
-        )} */}
-        {form.getValues("country") && form.getValues("category") && (
-          <div className="items-center justify-between md:flex">
-            <p className="my-1 text-center md:text-start">{`Scrap the maps for ${form.getValues(
-              "category"
-            )} places in ${
-              form.getValues("city") ? `${form.getValues("city")}, ` : ""
-            }${form.getValues("country")}?`}</p>
-            <Button type="submit" size="sm" className="w-full md:w-auto">
+        )}
+        <div>
+          {form.getValues("country") && form.getValues("category") && (
+            <Button type="submit" className="w-full">
               Submit
             </Button>
-          </div>
-        )}
+          )}
+          {fetching ||
+            (totalResults && query && (
+              <p className="bg-foreground text-background p-2 rounded-lg mt-2">{`${totalResults} ${query}`}</p>
+            ))}
+        </div>
       </form>
     </Form>
   );
