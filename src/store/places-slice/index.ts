@@ -131,10 +131,6 @@ const placesSlice = createSlice({
         startingIndex - state.pagination!.resultsPerPage,
         startingIndex
       );
-
-      console.log("page", state.pagination?.page);
-      console.log("from", startingIndex - state.pagination!.resultsPerPage);
-      console.log("to", startingIndex - 1);
     },
   },
 });
