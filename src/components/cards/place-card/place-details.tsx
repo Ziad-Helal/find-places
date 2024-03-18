@@ -6,6 +6,7 @@ import {
   DrawerFooter,
   DrawerHeader,
   DrawerTitle,
+  PlaceDetails_Skeletons,
 } from "@/components";
 import { useAppSelector } from "@/hooks";
 import { StarFilledIcon } from "@radix-ui/react-icons";
@@ -34,7 +35,7 @@ export const PlaceDetails = () => {
   return (
     <div className="container">
       {isLoading ? (
-        <p>loading...</p>
+        <PlaceDetails_Skeletons />
       ) : (
         <>
           <DrawerHeader>
@@ -114,8 +115,8 @@ export const PlaceDetails = () => {
               <div className="mt-2 space-x-2">
                 <span className="font-medium">Types: </span>
                 {types.map((type) => (
-                  <Badge key={type} variant="secondary">
-                    {type}
+                  <Badge key={type} variant="secondary" className="capitalize">
+                    {type.split("_").join(" ")}
                   </Badge>
                 ))}
               </div>
