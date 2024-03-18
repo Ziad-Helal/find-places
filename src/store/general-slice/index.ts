@@ -1,16 +1,17 @@
 import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
 
-type loading = "places";
+type loading = "places" | "place";
 
 interface GeneralState {
   loading: {
     places: boolean;
+    place: boolean;
   };
 }
 
 const initialState: GeneralState = {
-  loading: { places: false },
+  loading: { places: false, place: false },
 };
 
 const generalSlice = createSlice({

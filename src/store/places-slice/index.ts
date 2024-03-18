@@ -1,23 +1,19 @@
 import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
 
+interface Coordinates {
+  lat: number;
+  lng: number;
+}
+
 export interface Place {
   business_status: string;
   formatted_address: string;
   geometry: {
-    location: {
-      lat: number;
-      lng: number;
-    };
+    location: Coordinates;
     viewport: {
-      northeast: {
-        lat: number;
-        lng: number;
-      };
-      southwest: {
-        lat: number;
-        lng: number;
-      };
+      northeast: Coordinates;
+      southwest: Coordinates;
     };
   };
   icon: string;
@@ -45,6 +41,51 @@ export interface Place {
   types: string[];
 }
 
+interface PlaceDetails {
+  name: string;
+  formatted_address: string;
+  business_status: string;
+  opening_hours: {
+    open_now: boolean;
+    periods: {
+      close: {
+        day: 0 | 1 | 2 | 3 | 4 | 5 | 6;
+        time: string;
+      };
+      open: {
+        day: 0 | 1 | 2 | 3 | 4 | 5 | 6;
+        time: string;
+      };
+    }[];
+    weekday_text: string[];
+  };
+  photos: {
+    height: number;
+    width: number;
+    photo_reference: string;
+    html_attributions: string[];
+  }[];
+  place_id: string;
+  rating: number;
+  user_ratings_total: number;
+  reviews: {
+    author_name: string;
+    author_url: string;
+    language: string;
+    original_language: string;
+    profile_photo_url: string;
+    rating: number;
+    relative_time_description: string;
+    text: string;
+    time: number;
+    translated: boolean;
+  }[];
+  types: string[];
+  website: string;
+  formatted_phone_number: string;
+  url: string;
+}
+
 interface Pagination {
   page: number;
   lastPage: number;
@@ -56,6 +97,7 @@ interface Pagination {
 interface PlacesState {
   pagination?: Pagination;
   places?: Place[];
+  currentPlace?: PlaceDetails;
 }
 
 const initialState: PlacesState = {};
@@ -80,6 +122,9 @@ const placesSlice = createSlice({
         totalResults,
         currentResults,
       };
+    },
+    setCurrentPlace(state, action: PayloadAction<PlaceDetails>) {
+      state.currentPlace = action.payload;
     },
     nextPage(state) {
       const startingIndex =
@@ -137,6 +182,7 @@ const placesSlice = createSlice({
 
 export const {
   setPlaces,
+  setCurrentPlace,
   nextPage,
   previousPage,
   firstPage,
