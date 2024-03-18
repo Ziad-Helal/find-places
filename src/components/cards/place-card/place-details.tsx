@@ -31,6 +31,7 @@ export const PlaceDetails = () => {
   );
   const types = useAppSelector((state) => state.places.currentPlace?.types);
   const url = useAppSelector((state) => state.places.currentPlace?.url);
+  const reviews = useAppSelector((state) => state.places.currentPlace?.reviews);
 
   return (
     <div className="container">
@@ -119,6 +120,11 @@ export const PlaceDetails = () => {
                     {type.split("_").join(" ")}
                   </Badge>
                 ))}
+              </div>
+            )}
+            {reviews && (
+              <div className="mt-4">
+                <h2 className="">Reviews</h2>
               </div>
             )}
           </div>
