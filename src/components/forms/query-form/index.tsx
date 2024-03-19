@@ -31,6 +31,7 @@ import { categories } from "@/assets/places-categories";
 import { useAppDispatch, useAppSelector } from "@/hooks";
 import { getPlaces } from "@/store/places-slice";
 import { Input } from "@/components";
+import { countries } from "@/assets/world-cities";
 
 const FormSchema = z.object({
   country: z.string({
@@ -95,7 +96,9 @@ export function Query_Form() {
                       )}
                     >
                       {field.value
-                        ? regions.find(({ name }) => name === field.value)?.name
+                        ? Object.keys(countries).find(
+                            (country) => country == field.value
+                          )
                         : "Select country"}
                       <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                     </Button>
@@ -110,20 +113,20 @@ export function Query_Form() {
                     <CommandList>
                       <CommandEmpty>No countries found.</CommandEmpty>
                       <CommandGroup>
-                        {regions.map(({ name, numeric_code }) => (
+                        {Object.keys(countries).map((country, index) => (
                           <CommandItem
-                            value={name}
-                            key={numeric_code}
+                            key={index + country}
+                            value={country}
                             onSelect={() => {
-                              form.setValue("country", name);
+                              form.setValue("country", country);
                               setOpenCountries(false);
                             }}
                           >
-                            {name}
+                            {country}
                             <CheckIcon
                               className={cn(
                                 "ml-auto h-4 w-4",
-                                name === field.value
+                                country === field.value
                                   ? "opacity-100"
                                   : "opacity-0"
                               )}
@@ -157,12 +160,9 @@ export function Query_Form() {
                         )}
                       >
                         {field.value
-                          ? regions[
-                              regions.findIndex(
-                                ({ name }) => name === form.getValues("country")
-                              )
-                            ].states.find(({ name }) => name === field.value)
-                              ?.name
+                          ? countries[form.getValues("country")].find(
+                              (city) => city == field.value
+                            )
                           : "Select city"}
                         <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                       </Button>
@@ -171,36 +171,34 @@ export function Query_Form() {
                   <PopoverContent className="w-full p-0" align="start">
                     <Command>
                       <CommandInput
-                        placeholder="Search countries..."
+                        placeholder="Search cities..."
                         className="h-9"
                       />
                       <CommandList>
                         <CommandEmpty>No countries found.</CommandEmpty>
                         <CommandGroup>
-                          {regions[
-                            regions.findIndex(
-                              ({ name }) => name === form.getValues("country")
+                          {countries[form.getValues("country")].map(
+                            (city, index) => (
+                              <CommandItem
+                                key={index + city}
+                                value={city}
+                                onSelect={() => {
+                                  form.setValue("city", city);
+                                  setOpenCities(false);
+                                }}
+                              >
+                                {city}
+                                <CheckIcon
+                                  className={cn(
+                                    "ml-auto h-4 w-4",
+                                    city === field.value
+                                      ? "opacity-100"
+                                      : "opacity-0"
+                                  )}
+                                />
+                              </CommandItem>
                             )
-                          ].states.map(({ id, name }) => (
-                            <CommandItem
-                              value={name}
-                              key={id}
-                              onSelect={() => {
-                                form.setValue("city", name);
-                                setOpenCities(false);
-                              }}
-                            >
-                              {name}
-                              <CheckIcon
-                                className={cn(
-                                  "ml-auto h-4 w-4",
-                                  name === field.value
-                                    ? "opacity-100"
-                                    : "opacity-0"
-                                )}
-                              />
-                            </CommandItem>
-                          ))}
+                          )}
                         </CommandGroup>
                       </CommandList>
                     </Command>
