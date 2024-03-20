@@ -5,10 +5,12 @@ import { isLoaded, isLoading } from "@/store/general-slice";
 
 export const getPlaces = ({
   country,
+  state,
   city,
   category,
 }: {
   country: string;
+  state: string;
   city: string;
   category: string;
 }) => {
@@ -17,7 +19,7 @@ export const getPlaces = ({
 
     const response = await axios
       .get(
-        `http://localhost:5500/places?country=${country}&city=${city}&category=${category}`
+        `http://localhost:5500/api/places?country=${country}&government=${state}&city=${city}&category=${category}`
       )
       .then(({ data }) => data)
       .catch((error) => alert(error));
@@ -32,7 +34,7 @@ export const getPlace = (placeId: string) => {
     dispatch(isLoading("place"));
 
     const response = await axios
-      .get(`http://localhost:5500/places/${placeId}`)
+      .get(`http://localhost:5500/api/places/${placeId}`)
       .then(({ data }) => data)
       .catch((error) => alert(error));
 
