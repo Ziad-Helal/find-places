@@ -3,10 +3,17 @@ import type { PayloadAction } from "@reduxjs/toolkit";
 
 type loading = "places" | "place";
 
-interface State {
+interface Country {
   name: string;
-  sc: string;
-  cities: string[];
+  countryCode: string;
+  geonameId: number;
+}
+
+interface City {
+  name: string;
+  countryCode: string;
+  geonameId: number;
+  adminCode1: string;
 }
 
 interface GeneralState {
@@ -14,8 +21,9 @@ interface GeneralState {
     places: boolean;
     place: boolean;
   };
-  states?: State[];
-  cities?: string[];
+  countries?: Country[];
+  cities?: City[];
+  districts?: string[];
 }
 
 const initialState: GeneralState = {
@@ -32,16 +40,19 @@ const generalSlice = createSlice({
     isLoaded(state, action: PayloadAction<loading>) {
       state.loading[action.payload] = false;
     },
-    setStates(state, action: PayloadAction<{ states: State[] }>) {
-      state.states = action.payload.states;
+    setCountries(state, action: PayloadAction<Country[]>) {
+      state.countries = action.payload;
     },
-    setCities(state, action: PayloadAction<{ cities: string[] }>) {
-      state.cities = action.payload.cities;
+    setCities(state, action: PayloadAction<City[]>) {
+      state.cities = action.payload;
+    },
+    setDistrict(state, action: PayloadAction<Country[]>) {
+      state.districts = action.payload.map(({ name }) => name).sort();
     },
   },
 });
 
-export const { isLoading, isLoaded, setStates, setCities } =
+export const { isLoading, isLoaded, setCountries, setCities, setDistrict } =
   generalSlice.actions;
 
 export default generalSlice.reducer;

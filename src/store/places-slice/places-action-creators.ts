@@ -5,13 +5,13 @@ import { isLoaded, isLoading } from "@/store/general-slice";
 
 export const getPlaces = ({
   country,
-  state,
   city,
+  district,
   category,
 }: {
   country: string;
-  state: string;
   city: string;
+  district: string;
   category: string;
 }) => {
   return async (dispatch: AppDispatch) => {
@@ -19,7 +19,7 @@ export const getPlaces = ({
 
     const response = await axios
       .get(
-        `http://localhost:5500/api/places?country=${country}&government=${state}&city=${city}&category=${category}`
+        `http://localhost:5500/api/places?country=${country}&government=${city}&city=${district}&category=${category}`
       )
       .then(({ data }) => data)
       .catch((error) => alert(error));

@@ -30,15 +30,20 @@ import { categories } from "@/assets/categories";
 import { useAppDispatch, useAppSelector } from "@/hooks";
 import { getPlaces } from "@/store/places-slice";
 import { Input } from "@/components";
-import { countries } from "@/assets/countries";
-import { callCities, callStates } from "@/store/general-slice";
+import {
+  callCities,
+  callCountries,
+  callDistricts,
+} from "@/store/general-slice";
+import { continents } from "@/assets/continents";
 
 const FormSchema = z.object({
+  continent: z.string({ required_error: "Please select a continent." }),
   country: z.string({
     required_error: "Please select a coutry.",
   }),
-  state: z.string({ required_error: "Please select a state" }),
   city: z.string({ required_error: "Please select a city." }),
+  district: z.string({ required_error: "Please select a district" }),
   category: z.string({ required_error: "Please select a place category." }),
   comment: z.string().optional(),
 });
@@ -50,35 +55,36 @@ export function Query_Form() {
     (state) => state.places.pagination?.totalResults
   );
   const fetching = useAppSelector((state) => state.general.loading.places);
-  const states = useAppSelector((state) => state.general.states);
+  const countries = useAppSelector((state) => state.general.countries);
   const cities = useAppSelector((state) => state.general.cities);
+  const districts = useAppSelector((state) => state.general.districts);
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
   });
+  const [openContinents, setOpenContinents] = useState(false);
   const [openCountries, setOpenCountries] = useState(false);
-  const [openStates, setOpenStates] = useState(false);
   const [openCities, setOpenCities] = useState(false);
+  const [openDistricts, setOpenDistricts] = useState(false);
   const [openCategories, setOpenCategories] = useState(false);
 
-  function getStates(country: string) {
-    dispatch(callStates(countries.find(({ name }) => name == country)!.iso2));
+  function getCountries(continentGeonameId: number) {
+    dispatch(callCountries(continentGeonameId));
   }
 
-  function getCities(city: string) {
-    dispatch(
-      callCities(
-        countries.find(({ name }) => name == form.getValues("country"))!.iso2,
-        states!.find(({ name }) => name == city)!.sc
-      )
-    );
+  function getCities(countryGeonameId: number) {
+    dispatch(callCities(countryGeonameId));
+  }
+
+  function getDistricts(countryCode: string, adminCode1: string) {
+    dispatch(callDistricts(countryCode, adminCode1));
   }
 
   function onSubmit(data: z.infer<typeof FormSchema>) {
     dispatch(
       getPlaces({
         country: data.country,
-        state: data.state,
         city: data.city,
+        district: data.district,
         category: data.comment
           ? `${data.comment} ${data.category}`
           : data.category,
@@ -87,11 +93,8 @@ export function Query_Form() {
     setQuery(
       `${
         data.comment ? `${data.comment} ${data.category}` : data.category
-      } places in ${data.city}, ${data.state}, ${data.country}`
+      } places in ${data.district}, ${data.city}, ${data.country}`
     );
-    form.setValue("city", "");
-    form.setValue("category", "");
-    form.setValue("comment", "");
   }
 
   return (
@@ -99,10 +102,10 @@ export function Query_Form() {
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-2 mt-2">
         <FormField
           control={form.control}
-          name="country"
+          name="continent"
           render={({ field }) => (
             <FormItem className="flex flex-col">
-              <Popover open={openCountries} onOpenChange={setOpenCountries}>
+              <Popover open={openContinents} onOpenChange={setOpenContinents}>
                 <PopoverTrigger asChild>
                   <FormControl>
                     <Button
@@ -114,9 +117,9 @@ export function Query_Form() {
                       )}
                     >
                       {field.value
-                        ? countries.find(({ name }) => name == field.value)!
+                        ? continents.find(({ name }) => name == field.value)!
                             .name
-                        : "Select a Country"}
+                        : "Select a Continent"}
                       <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                     </Button>
                   </FormControl>
@@ -124,20 +127,23 @@ export function Query_Form() {
                 <PopoverContent className="w-full p-0" align="start">
                   <Command>
                     <CommandInput
-                      placeholder={`Search in ${countries.length} countries...`}
+                      placeholder={`Search in ${continents.length} continents...`}
                       className="h-9"
                     />
                     <CommandList>
-                      <CommandEmpty>No countries found.</CommandEmpty>
+                      <CommandEmpty>No continents found.</CommandEmpty>
                       <CommandGroup>
-                        {countries.map(({ name, iso2 }) => (
+                        {continents.map(({ name, geonameId }) => (
                           <CommandItem
-                            key={iso2}
+                            key={geonameId}
                             value={name}
                             onSelect={() => {
-                              form.setValue("country", name);
-                              getStates(name);
-                              setOpenCountries(false);
+                              form.setValue("district", "");
+                              form.setValue("city", "");
+                              form.setValue("country", "");
+                              form.setValue("continent", name);
+                              getCountries(geonameId);
+                              setOpenContinents(false);
                             }}
                           >
                             {name}
@@ -160,13 +166,13 @@ export function Query_Form() {
             </FormItem>
           )}
         />
-        {form.getValues("country") && states?.length && (
+        {form.getValues("continent") && countries && (
           <FormField
             control={form.control}
-            name="state"
+            name="country"
             render={({ field }) => (
               <FormItem className="flex flex-col">
-                <Popover open={openStates} onOpenChange={setOpenStates}>
+                <Popover open={openCountries} onOpenChange={setOpenCountries}>
                   <PopoverTrigger asChild>
                     <FormControl>
                       <Button
@@ -178,8 +184,9 @@ export function Query_Form() {
                         )}
                       >
                         {field.value
-                          ? states.find(({ name }) => name == field.value)?.name
-                          : "Select state"}
+                          ? countries.find(({ name }) => name == field.value)!
+                              .name
+                          : "Select a Country"}
                         <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                       </Button>
                     </FormControl>
@@ -187,20 +194,22 @@ export function Query_Form() {
                   <PopoverContent className="w-full p-0" align="start">
                     <Command>
                       <CommandInput
-                        placeholder={`Search in ${states.length} states...`}
+                        placeholder={`Search in ${countries.length} countries...`}
                         className="h-9"
                       />
                       <CommandList>
                         <CommandEmpty>No countries found.</CommandEmpty>
                         <CommandGroup>
-                          {states.map(({ name, sc }) => (
+                          {countries.map(({ name, geonameId }) => (
                             <CommandItem
-                              key={sc}
+                              key={geonameId}
                               value={name}
                               onSelect={() => {
-                                form.setValue("state", name);
-                                setOpenStates(false);
-                                getCities(name);
+                                form.setValue("district", "");
+                                form.setValue("city", "");
+                                form.setValue("country", name);
+                                getCities(geonameId);
+                                setOpenCountries(false);
                               }}
                             >
                               {name}
@@ -224,7 +233,7 @@ export function Query_Form() {
             )}
           />
         )}
-        {form.getValues("country") && cities?.length && (
+        {form.getValues("country") && cities && (
           <FormField
             control={form.control}
             name="city"
@@ -242,8 +251,8 @@ export function Query_Form() {
                         )}
                       >
                         {field.value
-                          ? cities.find((city) => city == field.value)
-                          : "Select city"}
+                          ? cities.find(({ name }) => name == field.value)!.name
+                          : "Select a City"}
                         <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                       </Button>
                     </FormControl>
@@ -255,22 +264,91 @@ export function Query_Form() {
                         className="h-9"
                       />
                       <CommandList>
-                        <CommandEmpty>No countries found.</CommandEmpty>
+                        <CommandEmpty>No cities found.</CommandEmpty>
                         <CommandGroup>
-                          {cities.map((city, index) => (
+                          {cities.map(
+                            ({ name, countryCode, geonameId, adminCode1 }) => (
+                              <CommandItem
+                                key={geonameId}
+                                value={name}
+                                onSelect={() => {
+                                  form.setValue("district", "");
+                                  form.setValue("city", name);
+                                  setOpenCities(false);
+                                  getDistricts(countryCode, adminCode1);
+                                }}
+                              >
+                                {name}
+                                <CheckIcon
+                                  className={cn(
+                                    "ml-auto h-4 w-4",
+                                    name === field.value
+                                      ? "opacity-100"
+                                      : "opacity-0"
+                                  )}
+                                />
+                              </CommandItem>
+                            )
+                          )}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
+        {form.getValues("city") && districts && (
+          <FormField
+            control={form.control}
+            name="district"
+            render={({ field }) => (
+              <FormItem className="flex flex-col">
+                <Popover open={openDistricts} onOpenChange={setOpenDistricts}>
+                  <PopoverTrigger asChild>
+                    <FormControl>
+                      <Button
+                        variant="outline"
+                        role="combobox"
+                        className={cn(
+                          "w-full justify-between",
+                          !field.value && "text-muted-foreground"
+                        )}
+                      >
+                        {field.value
+                          ? districts.find(
+                              (district) => district == field.value
+                            )
+                          : "Select a District"}
+                        <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </FormControl>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-full p-0" align="start">
+                    <Command>
+                      <CommandInput
+                        placeholder={`Search in ${districts.length} districts...`}
+                        className="h-9"
+                      />
+                      <CommandList>
+                        <CommandEmpty>No districts found.</CommandEmpty>
+                        <CommandGroup>
+                          {districts.map((district, index) => (
                             <CommandItem
-                              key={index + city}
-                              value={city}
+                              key={index + district}
+                              value={district}
                               onSelect={() => {
-                                form.setValue("city", city);
-                                setOpenCities(false);
+                                form.setValue("district", district);
+                                setOpenDistricts(false);
                               }}
                             >
-                              {city}
+                              {district}
                               <CheckIcon
                                 className={cn(
                                   "ml-auto h-4 w-4",
-                                  city === field.value
+                                  district === field.value
                                     ? "opacity-100"
                                     : "opacity-0"
                                 )}
@@ -287,7 +365,7 @@ export function Query_Form() {
             )}
           />
         )}
-        {form.getValues("country") && states?.length && (
+        {form.getValues("district") && (
           <FormField
             control={form.control}
             name="category"
@@ -308,7 +386,7 @@ export function Query_Form() {
                           ? categories.find(
                               (category) => category === field.value
                             )
-                          : "Select place"}
+                          : "Select a Business Category"}
                         <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                       </Button>
                     </FormControl>
@@ -316,11 +394,11 @@ export function Query_Form() {
                   <PopoverContent className="w-full p-0" align="start">
                     <Command>
                       <CommandInput
-                        placeholder="Search places..."
+                        placeholder={`Search in ${categories.length} business categories...`}
                         className="h-9"
                       />
                       <CommandList>
-                        <CommandEmpty>No places found.</CommandEmpty>
+                        <CommandEmpty>No categories found.</CommandEmpty>
                         <CommandGroup>
                           {categories.map((category) => (
                             <CommandItem
@@ -352,21 +430,21 @@ export function Query_Form() {
             )}
           />
         )}
-        {form.getValues("country") && states?.length && (
+        {form.getValues("category") && (
           <FormField
             control={form.control}
             name="comment"
             render={({ field }) => (
               <FormItem>
                 <FormControl>
-                  <Input placeholder="Somthing Specific..." {...field} />
+                  <Input placeholder="Somthing more Specific..." {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
         )}
-        {form.getValues("country") && form.getValues("category") && (
+        {form.getValues("district") && (
           <Button type="submit" className="w-full">
             Submit
           </Button>
