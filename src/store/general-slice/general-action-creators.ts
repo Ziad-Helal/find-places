@@ -41,17 +41,13 @@ export function callCities(countryGeonameId: number) {
 
 export function callDistricts(countryCode: string, adminCode1: string) {
   return async (dispatch: AppDispatch) => {
-    const endPoint = "searchJSON";
-
     const response = await axios
       .get(
-        `${
-          baseUrl + endPoint
-        }?username=${userName}&style=short&maxRows=1000&featureClass=A&featureClass=P&country=${countryCode}&adminCode1=${adminCode1}`
+        `http://localhost:5500/api/places/cities/${countryCode}/${adminCode1}`
       )
       .then(({ data }) => data)
       .catch((error) => alert(error));
 
-    dispatch(setDistrict(response.geonames));
+    dispatch(setDistrict(response));
   };
 }

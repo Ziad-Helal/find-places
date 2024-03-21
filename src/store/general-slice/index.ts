@@ -46,8 +46,8 @@ const generalSlice = createSlice({
     setCities(state, action: PayloadAction<City[]>) {
       state.cities = action.payload;
     },
-    setDistrict(state, action: PayloadAction<Country[]>) {
-      state.districts = action.payload.map(({ name }) => name).sort();
+    setDistrict(state, action: PayloadAction<string[]>) {
+      state.districts = action.payload;
     },
   },
 });
